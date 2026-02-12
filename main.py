@@ -4,7 +4,7 @@ from multiprocessing import Pool, cpu_count
 from sklearn.datasets import make_blobs
 from scipy.optimize import linear_sum_assignment
 
-# --- Helper: Efficient Accuracy Calculation ---
+# --- Efficient Accuracy Calculation ---
 def get_accuracy(true_labels, predicted_labels):
     """
     Matches arbitrary K-Means cluster IDs to True labels using the 
@@ -15,11 +15,11 @@ def get_accuracy(true_labels, predicted_labels):
     w = np.zeros((D, D), dtype=np.int64)
     
     # Fast histogram 2d calculation
-    # We map (pred, true) pairs to counts
+    # map (pred, true) pairs to counts
     for p, t in zip(predicted_labels, true_labels):
         w[p, t] += 1
 
-    # Find the best assignment (maximize diagonal sum)
+    # Finding the best assignment (maximize diagonal sum)
     row_ind, col_ind = linear_sum_assignment(w.max() - w)
     
     # Calculate accuracy based on optimal assignment
@@ -30,7 +30,7 @@ def get_accuracy(true_labels, predicted_labels):
 # --- Worker Function (Must be top-level) ---
 def parallel_assign_chunk(args):
     data_chunk, centroids = args
-    # Heavy Calculation: (N x 1 x F) - (1 x K x F)
+    # Calculation: (N x 1 x F) - (1 x K x F)
     # 50 Features makes this step computationally expensive
     distances = np.sqrt(((data_chunk[:, np.newaxis] - centroids) ** 2).sum(axis=2))
     return np.argmin(distances, axis=1)
@@ -38,7 +38,7 @@ def parallel_assign_chunk(args):
 class HighPerformanceKMeans:
     def __init__(self):
         # TUNED PARAMETERS FOR SPEEDUP
-        # We need "Hard" math to make parallel worth it.
+        # Applying "Hard" math to make parallel worth it.
         # 1 Million points x 50 Dimensions = Heavy CPU load
         self.n_samples = 1_000_000  
         self.n_features = 50        
@@ -80,7 +80,7 @@ class HighPerformanceKMeans:
         return total_time, acc
 
     def run_parallel(self):
-        # Use all cores minus 1 (to keep system responsive)
+        # Using all cores minus 1 (to keep system responsive)
         n_workers = max(1, cpu_count() - 1)
         print(f"\n--- Starting Parallel Execution ({n_workers} Workers) ---")
         
